@@ -1,0 +1,12 @@
+3
+agus-motor
+agus-mobil
+indra-mobil
+isi;indra-mobil;3
+isi;agus-motor;2
+data pembeli
+data transaksi
+total;motor
+cek;agus
+refill;agus-motor
+data pembeli
