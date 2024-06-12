@@ -7,54 +7,53 @@ Version 1.0
 */
 
 import java.time.LocalDateTime;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MyGasStation {
     public static void main(String[] args) {
-       Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
 
-       GasStation gasStation = new GasStation();
-       int totalCustomer = sc.nextInt();
+        GasStation gasStation = new GasStation();
+        int totalCustomer = sc.nextInt();
 
-       sc.nextLine();
-       while(totalCustomer-- > 0) {
-           gasStation.registerCustomer(sc.nextLine());
-       }
+        sc.nextLine();
+        while (totalCustomer-- > 0) {
+            gasStation.registerCustomer(sc.nextLine());
+        }
 
-       while(sc.hasNextLine()) {
-           String command = sc.nextLine();
-           if (command.isEmpty()) {
-               break;
-           }
-           
-           try {
-              if (command.startsWith("isi;")) {
-               System.out.println(gasStation.refuel(command));
-           } else if (command.equalsIgnoreCase("data pembeli")) {
-                gasStation.showCustomerData();
-           } else if (command.equalsIgnoreCase("data transaksi")) {
-                gasStation.showTransactions();
-           } else if(command.startsWith("total;")) {
-                gasStation.showTotalTransactionsByVehicleType(command.split(";")[1]);
-           } else if (command.startsWith("refill")) {
-                String customerKey = command.split(";")[1];
-                String[] data = customerKey.split("-");
-                gasStation.refillCustomerPertamaxBalance(data[0], data[1]);
-           } else if (command.startsWith("cek")) {
-                gasStation.checkPertamaxBalanceByCustomerName(command.split(";")[1]);
-               
-           } else {
-              System.out.println("Unknown Command");
-           }
+        while (sc.hasNextLine()) {
+            String command = sc.nextLine();
+            if (command.isEmpty()) {
+                break;
+            }
 
-           } catch(Exception e) {
-              System.out.printf("System failure: %s%n", e.getMessage());
-           }
-       }
-       sc.close();
-      
+            try {
+                if (command.startsWith("isi;")) {
+                    System.out.println(gasStation.refuel(command));
+                } else if (command.equalsIgnoreCase("data pembeli")) {
+                    gasStation.showCustomerData();
+                } else if (command.equalsIgnoreCase("data transaksi")) {
+                    gasStation.showTransactions();
+                } else if (command.startsWith("total;")) {
+                    gasStation.showTotalTransactionsByVehicleType(command.split(";")[1]);
+                } else if (command.startsWith("refill")) {
+                    String customerKey = command.split(";")[1];
+                    String[] data = customerKey.split("-");
+                    gasStation.refillCustomerPertamaxBalance(data[0], data[1]);
+                } else if (command.startsWith("cek")) {
+                    gasStation.checkPertamaxBalanceByCustomerName(command.split(";")[1]);
+
+                } else {
+                    System.out.println("Unknown Command");
+                }
+
+            } catch (Exception e) {
+                System.out.printf("System failure: %s%n", e.getMessage());
+            }
+        }
+        sc.close();
+
     }
 }
 
@@ -68,25 +67,6 @@ class GasStation {
     private final AtomicInteger motorVolume = new AtomicInteger(0);
     private final AtomicInteger mobilVolume = new AtomicInteger(0);
 
-
-    public int getMotorVolume() {
-        return motorVolume.get();
-    }
-
-
-    public void addMotorVolume(int volume) {
-        motorVolume.getAndAdd(volume);
-    }
-
-    public void addMobilVolume(int volume) {
-        mobilVolume.getAndAdd(volume);
-    }
-
-    public int getMobilVolume() {
-        return mobilVolume.get();
-    }
-
-
     public void registerCustomer(String input) {
         String[] customerData = input.split("-");
         Vehicle vehicle = Vehicle.createVehicle(customerData[1]);
@@ -98,16 +78,16 @@ class GasStation {
 
 
     public void refillCustomerPertamaxBalance(String customerName, String vehicleType) {
-         Customer customer = this.customers.get(customerName);
-         if (customer == null) {
-             System.out.println("Nama dan kendaraan belum terdaftar");
-             return;
-         }
+        Customer customer = this.customers.get(customerName);
+        if (customer == null) {
+            System.out.println("Nama dan kendaraan belum terdaftar");
+            return;
+        }
 
-         Vehicle vehicle = customer.getVehicleByType(vehicleType);
-         vehicle.refillPertamaxBalance(10);
+        Vehicle vehicle = customer.getVehicleByType(vehicleType);
+        vehicle.refillPertamaxBalance(10);
 
-         System.out.printf("%s berhasil melakukan pengisian ulang sebanyak %d liter%n", customerName, vehicle.getPertamaxBalance());
+        System.out.printf("%s berhasil melakukan pengisian ulang sebanyak %d liter%n", customerName, vehicle.getPertamaxBalance());
 
     }
 
@@ -117,9 +97,13 @@ class GasStation {
             System.out.println("Nama tersebut belum terdaftar");
             return;
         }
-        
-        int motorBalance = Optional.ofNullable(customer.getMotor()).map(Vehicle::getPertamaxBalance).orElse(0);
-        int mobilBalance = Optional.ofNullable(customer.getMobil()).map(Vehicle::getPertamaxBalance).orElse(0);
+
+        int motorBalance = Optional.ofNullable(customer.getMotor())
+                .map(Vehicle::getPertamaxBalance)
+                .orElse(0);
+        int mobilBalance = Optional.ofNullable(customer.getMobil())
+                .map(Vehicle::getPertamaxBalance)
+                .orElse(0);
         if (motorBalance != 0) {
             System.out.printf("Motor : %d liter%n", customer.getMotor().getPertamaxBalance());
         }
@@ -127,9 +111,6 @@ class GasStation {
         if (mobilBalance != 0) {
             System.out.printf("Mobil : %d liter%n", customer.getMobil().getPertamaxBalance());
         }
-         
-       
-        
     }
 
     public String refuel(String command) {
@@ -180,7 +161,7 @@ class GasStation {
                 System.out.printf((outputFormat), numbering++, customer.getName(), motor, motor.getPertamaxBalance());
             }
 
-            
+
         }
     }
 
@@ -213,7 +194,6 @@ class GasStation {
             totalPerCustomer.put(transaction.getCustomerName(), currentVolume + transaction.getVolume());
         }
 
-        
         for (Transaction x : filteredTransaction) {
             System.out.printf("%s telah mengisi: %d liter%n", x.getCustomerName(), totalPerCustomer.get(x.getCustomerName()));
         }
@@ -283,8 +263,9 @@ class Transaction {
 
 class Customer implements Comparable<Customer> {
 
+    public static final String MOTOR = "motor";
     private final Vehicle[] vehicles = new Vehicle[2];
-    private String name;
+    private final String name;
 
     public Customer(String name) {
         this.name = name;
@@ -293,10 +274,6 @@ class Customer implements Comparable<Customer> {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Vehicle getMotor() {
@@ -317,7 +294,7 @@ class Customer implements Comparable<Customer> {
 
 
     public void addVehicle(Vehicle vehicle) {
-        if ("motor".equalsIgnoreCase(vehicle.getVehicleType())) {
+        if (MOTOR.equalsIgnoreCase(vehicle.getVehicleType())) {
             this.setMotor(vehicle);
             return;
         }
@@ -325,7 +302,7 @@ class Customer implements Comparable<Customer> {
     }
 
     public Vehicle getVehicleByType(String vehicleType) {
-        if ("motor".equalsIgnoreCase(vehicleType)) {
+        if (MOTOR.equalsIgnoreCase(vehicleType)) {
             return this.getMotor();
         }
         return this.getMobil();
@@ -339,6 +316,7 @@ class Customer implements Comparable<Customer> {
 
 
 abstract class Vehicle {
+    public static final String MOTOR = "motor";
     private Integer pertamaxBalance;
 
     protected Vehicle(Integer pertamaxBalance) {
@@ -346,7 +324,7 @@ abstract class Vehicle {
     }
 
     public static Vehicle createVehicle(String vehicleType) {
-        if ("motor".equalsIgnoreCase(vehicleType)) {
+        if (MOTOR.equalsIgnoreCase(vehicleType)) {
             return new Motor();
         }
         return new Mobil();
@@ -354,10 +332,6 @@ abstract class Vehicle {
 
     public Integer getPertamaxBalance() {
         return pertamaxBalance;
-    }
-
-    public void setPertamaxBalance(Integer pertamaxBalance) {
-        this.pertamaxBalance = pertamaxBalance;
     }
 
     public boolean chargePertamaxBalance(int amount) {
