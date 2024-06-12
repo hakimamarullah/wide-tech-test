@@ -7,6 +7,7 @@ Version 1.0
 */
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,7 +28,9 @@ public class MyGasStation {
            if (command.isEmpty()) {
                break;
            }
-           if (command.startsWith("isi;")) {
+           
+           try {
+              if (command.startsWith("isi;")) {
                System.out.println(gasStation.refuel(command));
            } else if (command.equalsIgnoreCase("data pembeli")) {
                 gasStation.showCustomerData();
@@ -36,17 +39,22 @@ public class MyGasStation {
            } else if(command.startsWith("total;")) {
                 gasStation.showTotalTransactionsByVehicleType(command.split(";")[1]);
            } else if (command.startsWith("refill")) {
-                // TO DO
+                String customerKey = command.split(";")[1];
+                String[] data = customerKey.split("-");
+                gasStation.refillCustomerPertamaxBalance(data[0], data[1]);
            } else if (command.startsWith("cek")) {
-               // TO DO
+                gasStation.checkPertamaxBalanceByCustomerName(command.split(";")[1]);
                
            } else {
               System.out.println("Unknown Command");
            }
 
+           } catch(Exception e) {
+              System.out.printf("System failure: %s%n", e.getMessage());
+           }
        }
        sc.close();
-
+      
     }
 }
 
@@ -83,28 +91,54 @@ class GasStation {
         String[] customerData = input.split("-");
         Vehicle vehicle = Vehicle.createVehicle(customerData[1]);
         Customer customer = this.customers.getOrDefault(customerData[0], new Customer(customerData[0]));
-  
+        customer.addVehicle(vehicle);
 
-        this.customers.put(customerData[0], customer.addVehicle(vehicle));
+        this.customers.put(customerData[0], customer);
     }
 
-    public String checkCustomerTransactionByCustomerName(String customerName) {
-        String customerKeyMotor = customerName + "-" + MOTOR;
-        String customerKeyMobil = customerName + "-" + "mobil";
-        if (!this.customers.containsKey(customerKeyMotor) && !this.customers.containsKey(customerKeyMobil)) {
-            return "Nama tersebut belum terdaftar";
+
+    public void refillCustomerPertamaxBalance(String customerName, String vehicleType) {
+         Customer customer = this.customers.get(customerName);
+         if (customer == null) {
+             System.out.println("Nama dan kendaraan belum terdaftar");
+             return;
+         }
+
+         Vehicle vehicle = customer.getVehicleByType(vehicleType);
+         vehicle.refillPertamaxBalance(10);
+
+         System.out.printf("%s berhasil melakukan pengisian ulang sebanyak %d liter%n", customerName, vehicle.getPertamaxBalance());
+
+    }
+
+    public void checkPertamaxBalanceByCustomerName(String customerName) {
+        Customer customer = this.customers.get(customerName);
+        if (customer == null) {
+            System.out.println("Nama tersebut belum terdaftar");
+            return;
+        }
+        
+        int motorBalance = Optional.ofNullable(customer.getMotor()).map(Vehicle::getPertamaxBalance).orElse(0);
+        int mobilBalance = Optional.ofNullable(customer.getMobil()).map(Vehicle::getPertamaxBalance).orElse(0);
+        if (motorBalance != 0) {
+            System.out.printf("Motor : %d liter%n", customer.getMotor().getPertamaxBalance());
         }
 
-
+        if (mobilBalance != 0) {
+            System.out.printf("Mobil : %d liter%n", customer.getMobil().getPertamaxBalance());
+        }
+         
+       
+        
     }
 
     public String refuel(String command) {
         String[] refuelData = command.split(";");
         int volume = Integer.parseInt(refuelData[2]);
-        String customerKey = refuelData[1];
-        String vehicleType = customerKey.split("-")[1];
+        String[] customerKey = refuelData[1].split("-");
+        String vehicleType = customerKey[1];
 
-        Customer customer = this.customers.get(customerKey);
+        Customer customer = this.customers.get(customerKey[0]);
 
         if (customer == null) {
             return "Nama dan kendaraan belum terdaftar";
@@ -135,16 +169,18 @@ class GasStation {
         String outputFormat = "%d. %s | jenis %5s | sisa maksimal pengisian:%d liter%n";
         int numbering = 1;
         for (Customer customer : registeredCustomers) {
-            if (customer.getVehicleByType(MOTOR) != null) {
-                Vehicle motor = customer.getMotor();
-                System.out.printf((outputFormat), numbering++, customer.getName(), motor, motor.getPertamaxBalance());
-            }
 
             if (customer.getVehicleByType("mobil") != null) {
                 Vehicle mobil = customer.getMobil();
                 System.out.printf((outputFormat), numbering++, customer.getName(), mobil, mobil.getPertamaxBalance());
             }
 
+            if (customer.getVehicleByType(MOTOR) != null) {
+                Vehicle motor = customer.getMotor();
+                System.out.printf((outputFormat), numbering++, customer.getName(), motor, motor.getPertamaxBalance());
+            }
+
+            
         }
     }
 
@@ -177,9 +213,9 @@ class GasStation {
             totalPerCustomer.put(transaction.getCustomerName(), currentVolume + transaction.getVolume());
         }
 
-        int numbering = 1;
+        
         for (Transaction x : filteredTransaction) {
-            System.out.printf("%d. %s telah mengisi: %d liter%n", numbering++, x.getCustomerName(), totalPerCustomer.get(x.getCustomerName()));
+            System.out.printf("%s telah mengisi: %d liter%n", x.getCustomerName(), totalPerCustomer.get(x.getCustomerName()));
         }
 
         int total = vehicleType.equalsIgnoreCase(MOTOR) ? motorVolume.get() : mobilVolume.get();
