@@ -30,13 +30,13 @@ public class MyGasStation {
             }
 
             try {
-                if (command.startsWith("isi;")) {
+                if (command.startsWith("isi")) {
                     System.out.println(gasStation.refuel(command));
                 } else if (command.equalsIgnoreCase("data pembeli")) {
                     gasStation.showCustomerData();
                 } else if (command.equalsIgnoreCase("data transaksi")) {
                     gasStation.showTransactions();
-                } else if (command.startsWith("total;")) {
+                } else if (command.startsWith("total")) {
                     gasStation.showTotalTransactionsByVehicleType(command.split(";")[1]);
                 } else if (command.startsWith("refill")) {
                     String customerKey = command.split(";")[1];
