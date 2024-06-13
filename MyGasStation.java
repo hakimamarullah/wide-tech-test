@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 public class MyGasStation {
     public static void main(String[] args) {
-        Instant start = Instant.now();
         Scanner sc = new Scanner(System.in);
 
         GasStation gasStation = new PertamaxStation();
@@ -61,8 +60,6 @@ public class MyGasStation {
             }
         }
         sc.close();
-        System.out.println(Duration.between(start, Instant.now()).toMillis());
-
     }
 }
 
