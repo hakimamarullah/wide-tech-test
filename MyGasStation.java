@@ -59,7 +59,8 @@ public class MyGasStation {
 
 
 interface GasStation {
-    void registerCustomer(String s);
+
+    void registerCustomer(String customerName);
 
     String refuel(String command);
 
@@ -67,20 +68,32 @@ interface GasStation {
 
     void showTransactions();
 
-    void showTotalTransactionsByVehicleType(String s);
+    void showTotalTransactionsByVehicleType(String vehicleType);
 
     void refillCustomerBalance(String customerName, String vehicleType, int volume);
 
     void checkFuelBalanceByCustomerName(String customerName);
+
+    String getStationId();
 }
 
 class PertamaxStation implements GasStation {
+
+    private final String stationId;
     public static final String MOTOR = "motor";
     private final Map<String, Customer> customers = new HashMap<>();
 
     private final List<Transaction> transactions = new ArrayList<>();
     private final AtomicInteger motorVolume = new AtomicInteger(0);
     private final AtomicInteger mobilVolume = new AtomicInteger(0);
+
+    public PertamaxStation() {
+        this.stationId = UUID.randomUUID().toString().toUpperCase();
+    }
+
+    public String getStationId() {
+        return this.stationId;
+    }
 
     public void registerCustomer(String input) {
         String[] customerData = input.split("-");
@@ -225,6 +238,10 @@ class PertamaxStation implements GasStation {
         newTransaction.setVolume(volume);
 
         this.transactions.add(newTransaction);
+    }
+
+    public String toString() {
+        return this.getClass().getSimpleName() + " ID: " + this.getStationId();
     }
 }
 
