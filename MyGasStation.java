@@ -9,12 +9,13 @@ Version 1.0
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class MyGasStation {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        GasStation gasStation = new GasStation();
+        GasStation gasStation = new PertamaxStation();
         int totalCustomer = sc.nextInt();
 
         sc.nextLine();
@@ -40,9 +41,9 @@ public class MyGasStation {
                 } else if (command.startsWith("refill")) {
                     String customerKey = command.split(";")[1];
                     String[] data = customerKey.split("-");
-                    gasStation.refillCustomerPertamaxBalance(data[0], data[1]);
+                    gasStation.refillCustomerBalance(data[0], data[1], 10);
                 } else if (command.startsWith("cek")) {
-                    gasStation.checkPertamaxBalanceByCustomerName(command.split(";")[1]);
+                    gasStation.checkFuelBalanceByCustomerName(command.split(";")[1]);
 
                 } else {
                     System.out.println("Unknown Command");
@@ -53,13 +54,27 @@ public class MyGasStation {
             }
         }
         sc.close();
-
     }
 }
 
 
-class GasStation {
+interface GasStation {
+    void registerCustomer(String s);
 
+    String refuel(String command);
+
+    void showCustomerData();
+
+    void showTransactions();
+
+    void showTotalTransactionsByVehicleType(String s);
+
+    void refillCustomerBalance(String customerName, String vehicleType, int volume);
+
+    void checkFuelBalanceByCustomerName(String customerName);
+}
+
+class PertamaxStation implements GasStation {
     public static final String MOTOR = "motor";
     private final Map<String, Customer> customers = new HashMap<>();
 
@@ -77,7 +92,7 @@ class GasStation {
     }
 
 
-    public void refillCustomerPertamaxBalance(String customerName, String vehicleType) {
+    public void refillCustomerBalance(String customerName, String vehicleType, int volume) {
         Customer customer = this.customers.get(customerName);
         if (customer == null) {
             System.out.println("Nama dan kendaraan belum terdaftar");
@@ -85,13 +100,13 @@ class GasStation {
         }
 
         Vehicle vehicle = customer.getVehicleByType(vehicleType);
-        vehicle.refillPertamaxBalance(10);
+        vehicle.refillPertamaxBalance(volume);
 
         System.out.printf("%s berhasil melakukan pengisian ulang sebanyak %d liter%n", customerName, vehicle.getPertamaxBalance());
 
     }
 
-    public void checkPertamaxBalanceByCustomerName(String customerName) {
+    public void checkFuelBalanceByCustomerName(String customerName) {
         Customer customer = this.customers.get(customerName);
         if (customer == null) {
             System.out.println("Nama tersebut belum terdaftar");
@@ -186,7 +201,7 @@ class GasStation {
         List<Transaction> filteredTransaction = this.transactions.stream()
                 .filter(item -> item.getVehicleType().equals(vehicleType))
                 .sorted(new TransactionDateComparator())
-                .toList();
+                .collect(Collectors.toList());
 
         Map<String, Integer> totalPerCustomer = new HashMap<>();
         for (Transaction transaction : filteredTransaction) {
@@ -211,7 +226,6 @@ class GasStation {
 
         this.transactions.add(newTransaction);
     }
-
 }
 
 class TransactionDateComparator implements Comparator<Transaction> {
