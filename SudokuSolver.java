@@ -6,22 +6,17 @@ Created on 6/13/2024 3:47 PM
 Version 1.0
 */
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+
 public class SudokuSolver {
 
     private static final int SIZE = 9;
 
     public static void main(String[] args) {
-        int[][] board = {
-                {1, 0, 5, 8, 0, 2, 0, 0, 0},
-                {0, 9, 0, 0, 7, 6, 4, 0, 5},
-                {2, 0, 0, 4, 0, 0, 8, 1, 9},
-                {0, 1, 9, 0, 0, 7, 3, 0, 6},
-                {7, 6, 2, 0, 8, 3, 0, 9, 0},
-                {0, 0, 0, 0, 6, 1, 0, 5, 0},
-                {0, 0, 7, 6, 0, 0, 0, 3, 0},
-                {4, 3, 0, 0, 2, 0, 5, 0, 1},
-                {6, 0, 0, 3, 0, 8, 9, 0, 0}
-        };
+        int[][] board = createBoardV2("105802000090076405200400819019007306762083090000061050007600030430020501600308900");
 
         if (solveSudoku(board)) {
             System.out.println("Sudoku solved successfully!");
@@ -102,5 +97,20 @@ public class SudokuSolver {
             }
             System.out.println();
         }
+    }
+
+
+
+    public static int[][] createBoardV2(String input) {
+        int[][] board = new int[9][9];
+
+        for(int i = 0; i < Math.pow(board.length, 2); i++) {
+            int row = i / 9;
+            int col = i % 9;
+
+            board[row][col] = Character.getNumericValue(input.charAt(i));
+
+        }
+        return board;
     }
 }
